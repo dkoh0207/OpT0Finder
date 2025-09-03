@@ -19,12 +19,11 @@ namespace flashmatch {
     _allow_reuse_flash = pset.get<bool>("AllowReuseFlash",false);
     _invert_score = pset.get<bool>("InvertScore",true);
 
-    std::cout << "SelectionGreedy::_Configure_() called" << std::endl;
-    std::cout << "TouchMatchMaxThreshold: " << _score_max_threshold << std::endl;
-    std::cout << "FlashScoreMinThreshold: " << _score_min_threshold << std::endl;
-    std::cout << "FlashScoreMaxCeiling: " << _score_max_ceiling << std::endl;
-    std::cout << "AllowReuseFlash: " << _allow_reuse_flash << std::endl;
-    std::cout << "InvertScore: " << _invert_score << std::endl;
+    FLASH_NORMAL() << "TouchMatchMaxThreshold: " << _score_max_threshold << std::endl;
+    FLASH_NORMAL() << "FlashScoreMinThreshold: " << _score_min_threshold << std::endl;
+    FLASH_NORMAL() << "FlashScoreMaxCeiling: " << _score_max_ceiling << std::endl;
+    FLASH_NORMAL() << "AllowReuseFlash: " << _allow_reuse_flash << std::endl;
+    FLASH_NORMAL() << "InvertScore: " << _invert_score << std::endl;
   }
 
   std::vector<FlashMatch_t> SelectionGreedy::Select(const std::vector<std::vector<FlashMatch_t> >& match_data)
@@ -81,6 +80,7 @@ namespace flashmatch {
     score_map.clear();
 
     // Step 2.1 register matches with a flash-match score (inverse in order to use multimap)
+    FLASH_DEBUG() << "Original match_data values: " << std::endl;
     for(auto const& match_v : match_data) {
       for(auto const& match : match_v) {
         FLASH_DEBUG() << "match.score: " << match.score 
@@ -101,6 +101,10 @@ namespace flashmatch {
       auto const& tpc_index   = match_info.tpc_id;   // matched tpc original id
       auto const& flash_index = match_info.flash_id; // matched flash original id
 
+      FLASH_DEBUG() << "match_info.score: " << match_info.score 
+      << " match_info.tpc_id: " << match_info.tpc_id
+      << " match_info.flash_id: " << match_info.flash_id
+      << std::endl;
 
       // If this tpc object is already assigned (=better match found), ignore
       if (tpc_used.find(tpc_index) != tpc_used.end()) continue;

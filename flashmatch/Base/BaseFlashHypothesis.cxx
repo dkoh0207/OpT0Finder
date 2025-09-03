@@ -7,7 +7,7 @@ namespace flashmatch {
 
   BaseFlashHypothesis::BaseFlashHypothesis(std::string name)
     : BaseAlgorithm(kFlashHypothesis,name)
-    , _channel_mask(DetectorSpecs::GetME().NOpDets(),false)
+    , _channel_mask(DetectorSpecs::GetME().NOpDets(),true)
     , _uncoated_pmt_list(DetectorSpecs::GetME().NOpDets(),false)
   {}
 
@@ -19,6 +19,17 @@ namespace flashmatch {
     _global_qe = pset.get<double>("GlobalQE");
     _global_qe_refl = pset.get<double>("GlobalQERefl", -1);
 
+    // This is meant to be a list of channel ids to use
+    _chs_to_use = pset.get<std::vector<int> >("ChannelToUse",_chs_to_use);
+    if(!_chs_to_use.empty()) {
+      this->SetChannelMask(_chs_to_use); // This will set the channel mask based on the channel ids
+    }
+    else { //assume all channels are used
+      for (size_t i = 0; i < _channel_mask.size(); i++) {
+        _channel_mask[i] = true;
+      }
+    }
+
     _qe_v.clear();
     _qe_v = pset.get<std::vector<double> >("CCVCorrection",_qe_v);
     if(_qe_v.empty()) _qe_v.resize(DetectorSpecs::GetME().NOpDets(),1.0);
@@ -29,6 +40,8 @@ namespace flashmatch {
     }
 
     //Debug statements
+    FLASH_DEBUG() << "Channel mask size: " << _channel_mask.size() << std::endl;
+    FLASH_DEBUG() << "fNOpDets: " << DetectorSpecs::GetME().NOpDets() << std::endl;
     for(size_t i=0; i<_channel_mask.size(); ++i) {
       FLASH_DEBUG() << "Channel " << i << " is masked to " << _channel_mask[i] << std::endl;
     }

@@ -44,6 +44,7 @@ namespace flashmatch {
     std::vector<double> pe_v; ///< PE distribution over photo-detectors
     std::vector<double> pe_true_v; ///< PE distribution over photo-detectors of MCFlash
     std::vector<double> pe_err_v; ///< PE value error
+    std::vector<double> closest_pds_v; ///< closest PDs to the flash
     double x,y,z;             ///< Flash position
     double x_err,y_err,z_err; ///< Flash position error
     double time;              ///< Flash timing, a candidate T0
@@ -54,7 +55,7 @@ namespace flashmatch {
     ID_t idx;                 ///< index from original larlite vector
     //ID_t ROOT_idx;            ///< index in root file
     /// Default ctor assigns invalid values
-    Flash_t() : pe_v(), pe_true_v() , pe_err_v() {
+    Flash_t() : pe_v(), pe_true_v() , pe_err_v(), closest_pds_v() {
       x = y = z = kINVALID_DOUBLE;
       x_err = y_err = z_err = kINVALID_DOUBLE;
       time = kINVALID_DOUBLE;

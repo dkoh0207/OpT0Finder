@@ -67,7 +67,15 @@ namespace flashmatch {
     flashmatch::BaseFlashHypothesis* _flash_hypothesis;
 
     /// Sets the channels to use
-    void SetChannelMask(std::vector<int> ch_mask) {_channel_mask = ch_mask; }
+    void SetChannelMask(std::vector<int> ch_mask) {
+      // Initialize all channels to false
+      _channel_mask.resize(DetectorSpecs::GetME().NOpDets(),false);
+      // Set the channels to use to true
+      for (size_t i = 0; i < ch_mask.size(); ++i) {
+        FLASH_DEBUG() << "Setting channel mask: " << ch_mask[i] << " to true" << std::endl;
+        _channel_mask[ch_mask[i]] = true;
+      }
+    }
 
     /// Sets the channel type (pmt vs arapuca)
     void SetChannelType(std::vector<int> ch_type) {_channel_type = ch_type; }
@@ -85,7 +93,7 @@ namespace flashmatch {
     int _cryo = 0; ///< The Cryostat number to use
     double _vol_xmax, _vol_xmin; //Max and min x values of the active volume
 
-    std::vector<int> _channel_mask; ///< The list of channels to use
+    std::vector<bool> _channel_mask; ///< The list of channels to use
     std::vector<int> _channel_type;
 
 

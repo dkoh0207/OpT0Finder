@@ -184,15 +184,16 @@ namespace flashmatch{
     if(flash.pe_v.empty()) flash.pe_v.resize(fNOpDets);
     if(flash.pe_err_v.empty()) flash.pe_err_v.resize(fNOpDets);
     if(flash.pe_true_v.empty()) flash.pe_true_v.resize(fNOpDets);
+    if(flash.closest_pds_v.empty()) flash.closest_pds_v.resize(fNOpDets);
 
     assert(flash.pe_v.size()     == fNOpDets);
     assert(flash.pe_true_v.size() == fNOpDets);
     assert(flash.pe_err_v.size() == fNOpDets);
-
+    assert(flash.closest_pds_v.size() == fNOpDets);
     for (auto& v : flash.pe_v      ) {v = 0;}
     for (auto& v : flash.pe_err_v  ) {v = 0;}
     for (auto& v : flash.pe_true_v ) {v = 0;}
-
+    for (auto& v : flash.closest_pds_v) {v = 1.e9;}
     // Temporary for printout
     double q_tot = 0;
     // end of temporary for printout
@@ -228,31 +229,34 @@ namespace flashmatch{
       // Fill Estimate with Direct light
       //
       for (size_t op_det=0; op_det<direct_visibilities.size(); ++op_det) {
+        if (_channel_mask[op_det] == false) {
+          continue;
+        }
         const double visibility = direct_visibilities[op_det];
 
         double q = n_original_photons * visibility * _global_qe * _qe_v[op_det];
 
         flash.pe_v[op_det] += q;
-        // if (std::find(_channel_mask.begin(), _channel_mask.end(), op_det) != _channel_mask.end()) {
-        //   flash.pe_v[op_det] += q;
-        // } else {
-        //   flash.pe_v[op_det] = 0;
-        // }
+        geoalgo::Point_t const op_det_pos = fOpDetector[op_det].center;
+        // Update the closest distance to the PMT - only need to do this with direct or indirect light, add the visibility check if the charge is in a separate TPC.
+        double distance = (xyz - op_det_pos).Length();
+        if (distance < flash.closest_pds_v[op_det] && visibility > 0) {
+          FLASH_DEBUG() << "Updating closest distance to PMT " << op_det << " to " << distance << std::endl;
+          flash.closest_pds_v[op_det] = distance;
+        }
       }
 
       //
       // Fill Estimate with Reflected light
       //
       for (size_t op_det=0; op_det<reflected_visibilities.size(); ++op_det) {
+        if (_channel_mask[op_det] == false) {
+          continue;
+        }
         const double visibility = reflected_visibilities[op_det];
         double q = n_original_photons * visibility * _global_qe_refl * _qe_refl_v[op_det];
 
         flash.pe_v[op_det] += q;
-        // if (std::find(_channel_mask.begin(), _channel_mask.end(), op_det) != _channel_mask.end()) {
-        //   flash.pe_v[op_det] += q;
-        // } else {
-        //   flash.pe_v[op_det] = 0;
-        // }
       }
     }
     //Count number of valid channels
@@ -274,11 +278,12 @@ namespace flashmatch{
     // }
     
     // Print outs to check validity of filling the flashes
-    FLASH_DEBUG() << "Filled flash with " << _channel_mask.size() << " PMTs ... " 
+    FLASH_INFO() << "Filled flash with " << _channel_mask.size() << " PMTs ... " 
     << " Valid: " << flash.Valid(fNOpDets) << " Total PE: " << flash.TotalPE() 
     << " trk.size(): " << trk.size()
     << "Flash [x,y,z] -> [Total PE] : [" << flash.x << ", " << flash.y << ", " << flash.z << "] -> [" << flash.TotalPE() << "]"
     << " q_total: " << q_tot
+    << " closest_pds_v (first 10): " << flash.closest_pds_v[0] << ", " << flash.closest_pds_v[1] << ", " << flash.closest_pds_v[2] << ", " << flash.closest_pds_v[3] << ", " << flash.closest_pds_v[4] << ", " << flash.closest_pds_v[5] << ", " << flash.closest_pds_v[6] << ", " << flash.closest_pds_v[7] << ", " << flash.closest_pds_v[8] << ", " << flash.closest_pds_v[9]
     << " idx: " << flash.idx << std::endl;
     // Check validity of flash
     if (!flash.Valid(fNOpDets)) {
@@ -288,6 +293,11 @@ namespace flashmatch{
       << " flash.pe_err_v.size() " << flash.pe_err_v.size()
       << " flash.idx " << flash.idx << std::endl;
       throw OpT0FinderException();
+    }
+    for (size_t op_det=0; op_det<flash.pe_v.size(); ++op_det) {
+      if (flash.pe_v[op_det] > 0) {
+        FLASH_DEBUG()<<"op_det: "<<op_det<<" pe_v: "<<flash.pe_v[op_det]<<std::endl;
+      }
     }
 
   }

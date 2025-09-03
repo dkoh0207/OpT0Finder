@@ -194,9 +194,11 @@ class ROOTInput:
             flash.idx = f_idx
             pe_reco_v = f['pe_v']
             pe_true_v = f['pe_true_v']
+            closest_pds_v = f['closest_pds_v']
             flash.pe_v.resize(self.det.NOpDets(),0.)
             flash.pe_err_v.resize(self.det.NOpDets(),0.)
             flash.pe_true_v.resize(self.det.NOpDets(),0.)
+            flash.closest_pds_v.resize(self.det.NOpDets(),1.e9)
             for pmt in range(self.det.NOpDets()):
                 flash.pe_v[pmt] = pe_reco_v[pmt]
                 flash.pe_err_v[pmt] = 0.
@@ -204,6 +206,7 @@ class ROOTInput:
                 flash.time_width = f['time_width']
                 flash.pe_true_v[pmt] = pe_true_v[pmt]
                 flash.time_true = f['time_true']
+                flash.closest_pds_v[pmt] = closest_pds_v[pmt]
             if np.sum(flash.pe_v) > 0:
                 flash_v.append(flash)
         return flash_v

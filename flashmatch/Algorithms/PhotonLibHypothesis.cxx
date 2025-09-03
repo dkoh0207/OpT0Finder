@@ -55,15 +55,16 @@ namespace flashmatch {
         if(flash.pe_v.empty()) flash.pe_v.resize(n_pmt);
         if(flash.pe_err_v.empty()) flash.pe_err_v.resize(n_pmt);
         if(flash.pe_true_v.empty()) flash.pe_true_v.resize(n_pmt);
+        if(flash.closest_pds_v.empty()) flash.closest_pds_v.resize(n_pmt);
 
         assert(flash.pe_v.size()     == n_pmt);
         assert(flash.pe_true_v.size() == n_pmt);
         assert(flash.pe_err_v.size() == n_pmt);
-
+        assert(flash.closest_pds_v.size() == n_pmt);
         for (auto& v : flash.pe_v      ) {v = 0;}
         for (auto& v : flash.pe_err_v  ) {v = 0;}
         for (auto& v : flash.pe_true_v ) {v = 0;}
-
+        for (auto& v : flash.closest_pds_v) {v = 1e9;}
         double track_length = tpc_trk.front().dist(tpc_trk.back());
         int touch = this->InspectTouchingEdges(tpc_trk);
         bool extend_tracks = (_extend_tracks && touch && track_length < _threshold_track_len);
@@ -198,8 +199,7 @@ namespace flashmatch {
                 double qsum = 0.;
                 double vsum = 0.;
                 for(size_t ipmt=0; ipmt < n_pmt; ++ipmt) {
-
-                    if(_channel_mask[ipmt] < 0) continue; //this is a vector of ints, mapping an index to a pmt
+                    if(_channel_mask[ipmt] == false) continue; //this is a vector of ints, mapping an index to a pmt
 
                     if(!_uncoated_pmt_list[ipmt])
 		      local_pe_v[ipmt] += pt.q * lib_data[ipmt];

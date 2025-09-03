@@ -45,9 +45,17 @@ namespace flashmatch {
     void InitializeMask(Flash_t &flash) const;
 
     /// Sets the channels to use
-    void SetChannelMask(std::vector<int> ch_mask) { 
-      FLASH_DEBUG() << "Setting channel mask: " << ch_mask.size() << std::endl;
-      _channel_mask = ch_mask;
+    void SetChannelMask(std::vector<int> ch_to_use) { 
+      // Initialize all channels to false
+      FLASH_DEBUG() << "ch_to_use size: " << ch_to_use.size() << std::endl;
+      for (size_t i = 0; i < _channel_mask.size(); i++) {
+        _channel_mask[i] = false;
+      }
+      // Set the channels to use to true
+      for (size_t i = 0; i < ch_to_use.size(); i++) {
+        FLASH_DEBUG() << "Setting channel mask: " << ch_to_use[i] << " to true" << std::endl;
+        _channel_mask[ch_to_use[i]] = true;
+      }
     }
 
     /// Sets the channel type (pmt vs. xarapuca)
@@ -59,7 +67,8 @@ namespace flashmatch {
   protected:
 
     std::vector<int> _channel_type; 
-    std::vector<int> _channel_mask; ///< The list of channels mask use of
+    std::vector<int> _chs_to_use; ///< The list of channels mask use of
+    std::vector<bool> _channel_mask; ///< The list of channels mask use of
     std::vector<int> _uncoated_pmt_list; ///< A list of opdet sensitive to visible (reflected) light
     double _threshold_proximity; ///< Threshold for proximity
     double _segment_size; ///< Segment size

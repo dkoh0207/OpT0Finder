@@ -44,7 +44,7 @@ namespace flashmatch {
 
   public:
 
-    enum QLLMode_t { kChi2, kLLHD, kSimpleLLHD, kWeightedLLHD, kIntegralLLHD, kZIP, kPEWeightedLLHD };
+    enum QLLMode_t { kChi2, kLLHD, kSimpleLLHD, kWeightedLLHD, kIntegralLLHD, kZIP, kPEWeightedLLHD, kGStat };
 
   private:
     /// Valid ctor hidden (singleton)
@@ -121,6 +121,8 @@ namespace flashmatch {
     bool _record;      ///< Boolean switch to record minimizer history
     double _normalize; ///< Noramalize hypothesis PE spectrum
     double _chi_error; ///< width of an additional uncertainty to add to Chi2 method 
+    double _chi_error_min; ///< minimum poisson uncertainty on flash in PE.
+    double _chi_error_min_scaled; ///< Normalized flashes are scaled by total PE.
     bool _check_touching_track; ///< Whether to match immediately touching track with flash if timing coincides.
     double _touching_track_window; ///< Time(us) such that we use this tolerance T to find touching tracks
 
@@ -177,6 +179,7 @@ namespace flashmatch {
     std::vector<int> _match_mask; ///< OpDet Channel Mask for a cluster+flash pair 
 
     double _saturated_thresh; // threshold for hypothesis PE to ignore due to saturated measured PE 
+    double _distance_threshold; // threshold for distance to PMT to ignore due to saturation
     double _nonlinear_thresh; // parameters to correct for nonlinear **PMT** effects
     double _nonlinear_slope;  // parameters to correct for nonlinear **PMT** effects
     double _nonlinear_offset; // parameters to correct for nonlinear **PMT** effects
